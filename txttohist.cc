@@ -1,59 +1,117 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <string>
 #include <locale>
 
+#define H_ELEM 12 //Elements per Histogram
+#define L_ELEM 11 //Elements per line on file
+#define N_METAL 4 //Number of metals
+
 using namespace std;
 
 txttohist () {
 
+  // Name of Files/Metals proccessed
   string metal[] = {"C", "D", "Fe", "Pb"};
+  // File name
   string name;
+  // Aux var, just for advance file pointer
   string theLine;
+  // Line counter, for histogram delimitation.
   int counter = 0;
 
+  // File pointer; recovery of data from here
   ifstream file;
 
+  // If reading line on file for first time, ignore line
   bool firstTime = true;
 
-  double line[12] = {0};
+  // stores the values per line on file
+  double line[L_ELEM] = {0};
+  // stores last column values, to insert on histogram
+  vector<double> fact_ex (H_ELEM, 0);
+
 
   //TH1F* h1 = new TH1F("h1", "fact_ex", 12);
+  /*
   TH1F* h1 = new TH1F();
   TCanvas* c = new TCanvas;
   c->Divide(4,2);
   c->cd(8);
   TImage* img = TImage::Create();
+  */
 
-  cout << "Antes del loop\n";
+  cout << "Antes del loop\t DEBUG\n";
 
-  for (int i = 0; i < 4; i++) {
-    name = metal[i]+".txt";
-    cout << name << endl;
+  for (int i=0; i<N_METAL; i++) {
+    name = metal[i] + "/" + metal[i] + ".txt";
+    
+    cout << name << " DEBUG" << endl;
+    
     file.open(name.c_str(), ifstream::in);
     
-    if (file.is_open ())
+    if (file.is_open ()) // Verify if file is correctly opened
     {
-      while (!file.eof ()) {
-        if (firstTime)
+      while (!file.eof ()) { // Not the end of file
+        if (firstTime)  // for omitting first line
         {
           firstTime = false;
           getline(file,theLine);
         }
         else {
           counter++;
-          file >> line[0] >> line[1] >> line[2] >> line[3] >> line[4] >>
-              line[5] >> line[6] >> line[7] >> line[8] >> line[9] >> line[10]
-               >> line[11];
-          cout << line[0] << line[1] << line[2] << line[3] << line[4] <<
-              line[5] << line[6] << line[7] << line[8] << line[9] << line[10]
-               << line[11] << endl;
-          h1->Fill(line[11]);
+          file >> line[0] >> line[1] >> line[2] >> line[3] >> line[4];
+          file >> line[5] >> line[6] >> line[7] >> line[8] >> line[9] >> line[10];
 
-          if ( !(counter % 12) ) {
+          cout << line[0] << line[1] << line[2] << line[3] << line[4];
+          cout << line[5] << line[6] << line[7] << line[8] << line[9];
+          cout << line[10] << endl;
+
+          //h1->Fill(line[10]);
+          //store elemen from last row to array
+          fact_ex[counter % H_ELEM] = line[10];
+
+          if ( !(counter % H_ELEM) ) { //When whe have stored all values on array
+            // Sort vector
+            sort (fact_ex.begin(), fact_ex.end());
+
+            // Store values on histogram
+            TH1F* h = new TH1F("h", "fact_ex", H_ELEM, fact_ex[0], fact_ex[10]);
+            // Canvas for saving histogram to .png file
+            TCanvas* c = new TCanvas;
+            c->Divide(4,2);
             c->cd(8);
+            // Image for storing
+            TImage* img = TImage::Create();
+            // Store all values of fact_ex on histogram
+            h->FillN(H_ELEM, fact_ex, NULL);
+            h->Write();
+
+            img->FromPad(c);
+
+            // Variable to convert numbers to string
+            ostringstream convert;
+            convert << metal[i] << "/";
+            convert << "phih_x" << line[1] << "_QQ" << line[0] << "_z";
+            convert << line[2] << "_PT" << line[3] << ".png";
+
+            //convert variable to string
+            string imgName = convert.str();
+            cout << imgName << "\t DEBUG" << endl;
+
+            // Write image to .png file
+            img->WriteImage(imgName.c_str());
+
+            // Free Memory
+            delete h, c, img;
+
+            // Advance file pointer
+            getline(file,theLine);
+
+            /*
 
             TH1F* h2 = h1->Clone();
             h2->SetName("fact_ex");
@@ -91,11 +149,10 @@ txttohist () {
             c = new TCanvas;
             c->Divide(4,2);
             img = TImage::Create();
-
-            getline(file,theLine);
+            */
           }
         }
       }
     }
   }
-}
+} 
