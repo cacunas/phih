@@ -1,79 +1,112 @@
 #include <iostream>
-#include <fstream>
-#include <stdio.h>
+//#include <vector>
+//#include <algorithm>
 
-#include <sstream>
-#include <vector>
+#define H_ELEM 12 //Elements per Histogram
+#define L_ELEM 11 //Elements per line on file
+#define N_METAL 4 //Number of metals
+#define X_MIN -180 
+#define X_MAX 180
 
 using namespace std;
 
-/*int main*/ txt2hist ()
-{
-	/*ifstream myfile;
+void txt2hist () {
 
-	string metal[] = {"C","D","Fe","Pb"};
-	string line;
-	string splitted[];
+	// Name of Files/Metals proccessed
+  	string metal[] = {"C", "D", "Fe", "Pb"};
 
-	bool firstTime = true;
+  	// File name
+  	string fileName;
+  	// Aux var, just for advance file pointer
+  	string theLine;
+  	// Line counter, for histogram delimitation.
+  	int lineCounter = 0;
 
-	for (int i = 0; i < 4; ++i)
-	{
-		myfile.open (metal[i]+".txt");
+  	// File pointer; recovery of data from here
+  	ifstream file;
 
-		while ( getline (myfile,line) )
-		{
-			if (firstTime)
-				continue;
-			else
-			{
-				splitted = line.split("\t");
-			}
-		}
+  	// If reading line on file for first time, ignore line
+  	bool firstTime = true;
 
-	}*/
+  	// stores the values per line on file
+  	vector<double> line (L_ELEM, 0);
 
+  	// Canvas for saving histogram to .png file
+ 	TCanvas* c = new TCanvas;
 
-	//char basura[11][15];
-	double datos[11];
-	//vector <double> utiles;
+ 	// Histogram
+ 	TH1F* h = new TH1F("h", "fact_ex", H_ELEM, X_MIN, X_MAX);
 
-	TH1F* h1 = new TH1F("h1", "gaus", 12, -1, 1);
+ 	// image to store
+ 	TImage* img = TImage::Create();
 
-	int counter = 0;
+ 	for (int i = 0; i < N_METAL; ++i) {
+ 		fileName = metal[i] + "/" + metal[i] + ".txt";
 
-	FILE * file;
-	file = fopen("C.txt","r");
+ 		file.open ( name.c_str(), ifstream::in );
 
-	//fscanf(file,"%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", &basura[0], &basura[1],&basura[2],&basura[3],&basura[4],&basura[5],&basura[6],&basura[7],&basura[8],&basura[9],&basura[10]);
-	fscanf(file,"%*s\t%*s\t%*s\t%*s\t%*s\t%*s\t%*s\t%*s\t%*s\t%*s\t%*s\n");
+ 		if ( file.is_open() ) {
+ 			while ( !file.eof() ) {
+ 				if (firstTime) {
+ 					firstTime = false;
+ 					// Advance file pointer to next line
+ 					getline ( file, theLine );
+ 				} else {
+ 					lineCounter++;
 
-	while(fscanf(file, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &datos[0], &datos[1],&datos[2],&datos[3],&datos[4],&datos[5],&datos[6],&datos[7],&datos[8],&datos[9],&datos[10]) != EOF ){
-		counter++;
+ 					// Retrieve line from file, store on vector
+ 					file >> line[0] >> line[1] >> line[2] >> line[3] >> line[4]
+               			 >> line[5] >> line[6] >> line[7] >> line[8] >> line[9]
+               			 >> line[10];
 
-		if ( !(counter % 12) )
-		{
-			TCanvas* c = new TCanvas;
-			c->Divide(4,2);
-			c->cd(8);
-			
-			TImage* img = TImage::Create();
-			img->FromPad(c);
-			string name = "phih_x"+datos[1]+"_QQ"+datos[0]+"_z"+datos[2]
-				+"_PT"+datos[3]+".png";
+               		// Fill histogram
+               		h->SetBinContent ( (lineCounter % H_ELEM)+1, line[10] );
 
-			img->WriteImage(name);
+               		if ( !(lineCounter % H_ELEM)) {
+               			// Clean object pointers
+               			delete c;
+               			delete img;
 
-			delete h1;
-			h1 = new new TH1F("h1", "gaus", 12, -1, 1);
-		}
+               			// Create new objects
+               			TCanvas* c = new TCanvas;
 
-		h1->Fill(datos[10]);
+               			// Defining color for filling histograms
+            			gStyle->SetHistFillColor(kBlue);
 
-		utiles.push_back(datos[10]);
-		cout << datos[10] << endl;
-	}
-	//myfile.open();
+            			// Draw histo
+            			h->UseCurrentStyle();
+            			h->Draw("*H");
 
-	//return 0;
+            			// ??? (on example, not idea what it does)
+			            gSystem->ProcessEvents();
+
+			            // Image for storing
+			            TImage* img = TImage::Create();         
+			            img->FromPad(c);
+
+			            // Variable to convert numbers to string
+			            ostringstream convert;
+			            convert << metal[i] << "/";
+			            convert << "phih_x" << line[1] << "_QQ" << line[0] << "_z";
+			            convert << line[2] << "_PT" << line[3] << ".png";
+
+			            //convert variable to string
+			            string imgName = convert.str();
+			            //cout << imgName << "\t DEBUG" << endl;
+
+			            // Write image to .png file
+			            img->WriteImage ( imgName.c_str() );
+
+			            delete h;
+
+			            // Store values on histogram
+			            TH1F* h = new TH1F("h", "fact_ex", H_ELEM, X_MIN, X_MAX);
+
+			            // Advance file pointer
+			            getline(file,theLine);
+               		}
+ 				}
+ 			}
+ 		}
+ 	}
 }
