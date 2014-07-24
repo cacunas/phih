@@ -80,7 +80,7 @@ txttohist () {
 
           //store elemen from last row to array
           //fact_ex[counter % H_ELEM] = line[10];
-          h->SetBinContent ( counter % H_ELEM, line[10] );
+          h->SetBinContent ( (counter % H_ELEM)+1, line[10] );
 
           if ( !(counter % H_ELEM) ) { //When whe have stored all values on array
             // Sort vector
@@ -94,11 +94,15 @@ txttohist () {
             TCanvas* c = new TCanvas;
             //c->Divide(4,2);
             //c->cd(8);
+
+            // Defining color for filling histograms
+            gStyle->SetHistFillColor(kBlue);
                     
             // Store all values of fact_ex on histogram
             // Double_t* p_fact_ex = &fact_ex[0];
             // h->FillN(H_ELEM, p_fact_ex, NULL);
-            h->Draw("E0*H");
+            h->UseCurrentStyle();
+            h->Draw("*H");
 
             // DEBUG
             //c->Draw();
