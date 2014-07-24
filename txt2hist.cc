@@ -16,7 +16,7 @@ void txt2hist () {
   	string metal[] = {"C", "D", "Fe", "Pb"};
 
   	// File name
-  	string fileName;
+  	string fileName, rfileName;
   	// Aux var, just for advance file pointer
   	string theLine;
   	// Line counter, for histogram delimitation.
@@ -40,8 +40,16 @@ void txt2hist () {
  	// image to store
  	TImage* img = TImage::Create();
 
+ 	// root file to store all
+ 	TFile* rfile = new TFile();
+
  	for (int i = 0; i < N_METAL; ++i) {
  		fileName = metal[i] + "/" + metal[i] + ".txt";
+ 		rfileName = metal[i] + "/" + metal[i] + ".root";
+
+ 		delete rfile;
+
+ 		rfile = new TFile( rfileName.c_str(), "RECREATE" );
 
  		file.open ( fileName.c_str(), ifstream::in );
 
@@ -70,12 +78,10 @@ void txt2hist () {
                			// Create new objects
                			TCanvas* c = new TCanvas;
 
-               			// Defining color for filling histograms
-            			//gStyle->SetHistFillColor(kBlue);
-
             			// Draw histo
-            			//h->UseCurrentStyle();
-            			h->Draw(/*"*H"*/);
+            			h->Draw();
+            			// Store histo
+            			h->Write();
 
             			// ??? (on example, not idea what it does)
 			            gSystem->ProcessEvents();
