@@ -43,7 +43,7 @@ void txt2hist () {
  	for (int i = 0; i < N_METAL; ++i) {
  		fileName = metal[i] + "/" + metal[i] + ".txt";
 
- 		file.open ( name.c_str(), ifstream::in );
+ 		file.open ( fileName.c_str(), ifstream::in );
 
  		if ( file.is_open() ) {
  			while ( !file.eof() ) {
@@ -71,11 +71,11 @@ void txt2hist () {
                			TCanvas* c = new TCanvas;
 
                			// Defining color for filling histograms
-            			gStyle->SetHistFillColor(kBlue);
+            			//gStyle->SetHistFillColor(kBlue);
 
             			// Draw histo
-            			h->UseCurrentStyle();
-            			h->Draw("*H");
+            			//h->UseCurrentStyle();
+            			h->Draw(/*"*H"*/);
 
             			// ??? (on example, not idea what it does)
 			            gSystem->ProcessEvents();
