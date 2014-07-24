@@ -36,13 +36,13 @@ txttohist () {
 
 
   //TH1F* h1 = new TH1F("h1", "fact_ex", 12);
-  /*
-  TH1F* h1 = new TH1F();
+  
   TCanvas* c = new TCanvas;
-  c->Divide(4,2);
-  c->cd(8);
+  TH1F* h1 = new TH1F();
+  //c->Divide(4,2);
+  //c->cd(8);
   TImage* img = TImage::Create();
-  */
+  
 
   cout << "Antes del loop\t DEBUG\n";
 
@@ -63,12 +63,16 @@ txttohist () {
         }
         else {
           counter++;
-          file >> line[0] >> line[1] >> line[2] >> line[3] >> line[4];
-          file >> line[5] >> line[6] >> line[7] >> line[8] >> line[9] >> line[10];
 
-          cout << line[0] << line[1] << line[2] << line[3] << line[4];
-          cout << line[5] << line[6] << line[7] << line[8] << line[9];
-          cout << line[10] << endl;
+          cout << "Line Counter:\t" << counter << " DEBUG" << endl;
+
+          file >> line[0] >> line[1] >> line[2] >> line[3] >> line[4]
+               >> line[5] >> line[6] >> line[7] >> line[8] >> line[9] >> line[10];
+
+          cout << line[0] << " " << line[1] << " " << line[2] << " " << line[3];
+          cout << " " << line[4] << " " << line[5] << " " << line[6] << " ";
+          cout << line[7] << " " << line[8] << " " << line[9] << " " << line[10];
+          cout << endl;
 
           //h1->Fill(line[10]);
           //store elemen from last row to array
@@ -78,23 +82,31 @@ txttohist () {
             // Sort vector
             sort (fact_ex.begin(), fact_ex.end());
 
+            // Canvas for saving histogram to .png file
+            //TCanvas* c = new TCanvas;
+            //c->Divide(4,2);
+            //c->cd(8);
+
             // Store values on histogram
             TH1F* h = new TH1F("h", "fact_ex", H_ELEM, fact_ex[0], fact_ex[10]);
-            // Canvas for saving histogram to .png file
-            TCanvas* c = new TCanvas;
-            c->Divide(4,2);
-            c->cd(8);
-            // Image for storing
-            TImage* img = TImage::Create();
+            
             // Store all values of fact_ex on histogram
-            h->FillN(H_ELEM, fact_ex, NULL);
-            h->Write();
+            Double_t* p_fact_ex = &fact_ex[0];
+            h->FillN(H_ELEM, p_fact_ex, NULL);
+            h->Draw();
 
+            // DEBUG
+            c->Draw();
+
+            gSystem->ProcessEvents();
+
+            // Image for storing
+            TImage* img = TImage::Create();         
             img->FromPad(c);
 
             // Variable to convert numbers to string
             ostringstream convert;
-            convert << metal[i] << "/";
+            //convert << metal[i] << "/";
             convert << "phih_x" << line[1] << "_QQ" << line[0] << "_z";
             convert << line[2] << "_PT" << line[3] << ".png";
 
@@ -106,7 +118,9 @@ txttohist () {
             img->WriteImage(imgName.c_str());
 
             // Free Memory
-            delete h, c, img;
+            delete h;
+            delete c;
+            delete img;
 
             // Advance file pointer
             getline(file,theLine);
